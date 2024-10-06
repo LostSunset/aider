@@ -59,14 +59,16 @@ usage: aider [-h] [--openai-api-key] [--anthropic-api-key] [--model]
              [--attribute-commit-message-author | --no-attribute-commit-message-author]
              [--attribute-commit-message-committer | --no-attribute-commit-message-committer]
              [--commit] [--commit-prompt] [--dry-run | --no-dry-run]
-             [--lint] [--lint-cmd] [--auto-lint | --no-auto-lint]
-             [--test-cmd] [--auto-test | --no-auto-test] [--test]
-             [--file] [--read] [--vim] [--chat-language] [--version]
+             [--skip-sanity-check-repo] [--lint] [--lint-cmd]
+             [--auto-lint | --no-auto-lint] [--test-cmd]
+             [--auto-test | --no-auto-test] [--test] [--file]
+             [--read] [--vim] [--chat-language] [--version]
              [--just-check-update]
              [--check-update | --no-check-update]
-             [--install-main-branch] [--upgrade] [--apply] [--yes]
-             [-v] [--show-repo-map] [--show-prompts] [--exit]
-             [--message] [--message-file] [--encoding] [-c] [--gui]
+             [--install-main-branch] [--upgrade] [--apply]
+             [--yes-always] [-v] [--show-repo-map] [--show-prompts]
+             [--exit] [--message] [--message-file] [--encoding] [-c]
+             [--gui]
              [--suggest-shell-commands | --no-suggest-shell-commands]
              [--voice-format] [--voice-language]
 
@@ -455,6 +457,11 @@ Aliases:
   - `--dry-run`
   - `--no-dry-run`
 
+### `--skip-sanity-check-repo`
+Skip the sanity check for the git repository (default: False)  
+Default: False  
+Environment variable: `AIDER_SKIP_SANITY_CHECK_REPO`  
+
 ## Fixing and committing:
 
 ### `--lint`
@@ -545,9 +552,9 @@ Aliases:
 Apply the changes from the given file instead of running the chat (debug)  
 Environment variable: `AIDER_APPLY`  
 
-### `--yes`
+### `--yes-always`
 Always say yes to every confirmation  
-Environment variable: `AIDER_YES`  
+Environment variable: `AIDER_YES_ALWAYS`  
 
 ### `--verbose`
 Enable verbose output  

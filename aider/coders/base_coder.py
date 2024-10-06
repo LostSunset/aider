@@ -1073,7 +1073,7 @@ class Coder:
                 self.warming_pings_left -= 1
                 self.next_cache_warm = time.time() + delay
 
-                kwargs = self.main_model.extra_params or dict()
+                kwargs = dict(self.main_model.extra_params) or dict()
                 kwargs["max_tokens"] = 1
 
                 try:
@@ -1193,12 +1193,16 @@ class Coder:
         else:
             content = ""
 
+        try:
+            self.reply_completed()
+        except KeyboardInterrupt:
+            interrupted = True
+
         if interrupted:
             content += "\n^C KeyboardInterrupt"
             self.cur_messages += [dict(role="assistant", content=content)]
             return
 
-        self.reply_completed()
         edited = self.apply_updates()
 
         self.update_cur_messages()

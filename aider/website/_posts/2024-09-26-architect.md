@@ -2,7 +2,7 @@
 title: Separating code reasoning and editing
 excerpt: An Architect model describes how to solve the coding problem, and an Editor model translates that into file edits. This Architect/Editor approach produces SOTA benchmark results.
 highlight_image: /assets/architect.jpg
-draft: true
+draft: false
 nav_exclude: true
 ---
 {% if page.date %}
@@ -19,7 +19,10 @@ Aider now has experimental support for using two models to complete each coding 
 Splitting up "code reasoning" and "code editing" in this manner
 has produced SOTA results on
 [aider's code editing benchmark](/docs/benchmarks.html#the-benchmark).
-It also significantly improved the benchmark scores of many
+Using o1-preview as the Architect with either DeepSeek or o1-mini as the
+Editor produced the SOTA score of 85%.
+Using the Architect/Editor approach
+also significantly improved the benchmark scores of many
 models, compared to their previous "solo" baseline scores (striped bars).
 
 <style>
@@ -338,7 +341,7 @@ score for various combinations of Architect and Editor models.
 
 Some noteworthy observations:
 
-- Pairing o1-preview as Architect with Deepseek as Editor sets a SOTA significantly above the previous best score. This result is obtained with Deepseek using the "whole" editing format, requiring it to output a full update copy of each edited source file. Both of these steps are therefore quite slow, so probably not practical for interactive use with aider.
+- Pairing o1-preview as Architect with either Deepseek or o1-mini as Editor sets a SOTA significantly above the previous best score. This result is obtained with the "whole" editing format, requiring the Editor to output a full update copy of each edited source file. Both of these steps are therefore quite slow, so probably not practical for interactive use with aider.
 - Pairing OpenAI's o1-preview with Anthropic's Sonnet as the Editor produces the second best result. This is an entirely practical configuration for users able to work with both providers.
 - Pairing many models with themselves in the Architect/Editor configuration can provide
 significant benefits. 
@@ -353,7 +356,7 @@ o1-preview, o1-mini, GPT-4o and Claude 3.5 Sonnet.
 Run aider with `--architect` or get started quickly like this:
 
 ```
-pip install -U git+https://github.com/paul-gauthier/aider.git
+pip install -U aider-chat
 
 # Change directory into a git repo
 cd /to/your/git/repo
@@ -404,7 +407,7 @@ this model with aider.
         {% for item in group.items %}
           <tr class="{% if group_class == 1 %}shaded{% endif %}">
             <td>{{ item.model }}</td>
-            <td>{{ item.editor_model | default: "<b>Baseline<b>" }}</td>
+            <td>{% if item.editor_model %}{{ item.editor_model }}{% else %}<b>Baseline</b>{% endif %}</td>
             <td style="text-align: center;">{{ item.editor_edit_format | default: item.edit_format }}</td>
             <td style="text-align: right;">{{ item.pass_rate_2 }}%</td>
           </tr>
@@ -413,5 +416,3 @@ this model with aider.
     </tbody>
   </table>
 </div>
-
-

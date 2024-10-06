@@ -58,6 +58,13 @@ at both the architect and the editor.
 Allowing the model two requests to solve the problem and edit the files
 usually provides a better result.
 
+The editor model uses one of aider's edit formats to let the LLM
+edit source files.
+Aider will pick a suitable edit format by default,
+but you can customize it with `--editor-edit-format <format>`.
+The 
+["editor-diff" and "editor-whole" edit formats](/docs/more/edit-formats.html#editor-diff-and-editor-whole)
+are the recommended edit formats when using architect mode.
 See this article on 
 [aider's architect/editor mode](/2024/09/26/architect.html)
 for more details.

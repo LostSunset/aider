@@ -58,7 +58,7 @@ def get_parser(default_config_files, git_root):
         const=opus_model,
         help=f"Use {opus_model} model for the main chat",
     )
-    sonnet_model = "claude-3-5-sonnet-20240620"
+    sonnet_model = "claude-3-5-sonnet-20241022"
     group.add_argument(
         "--sonnet",
         action="store_const",
@@ -687,6 +687,12 @@ def get_parser(default_config_files, git_root):
         action=argparse.BooleanOptionalAction,
         default=True,
         help="Enable/disable suggesting shell commands (default: True)",
+    )
+    group.add_argument(
+        "--fancy-input",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Enable/disable fancy input with history and completion (default: True)",
     )
 
     ##########

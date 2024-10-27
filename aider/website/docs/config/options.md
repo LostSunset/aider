@@ -70,7 +70,8 @@ usage: aider [-h] [--openai-api-key] [--anthropic-api-key] [--model]
              [--exit] [--message] [--message-file] [--encoding] [-c]
              [--gui]
              [--suggest-shell-commands | --no-suggest-shell-commands]
-             [--voice-format] [--voice-language]
+             [--fancy-input | --no-fancy-input] [--voice-format]
+             [--voice-language]
 
 ```
 
@@ -101,7 +102,7 @@ Use claude-3-opus-20240229 model for the main chat
 Environment variable: `AIDER_OPUS`  
 
 ### `--sonnet`
-Use claude-3-5-sonnet-20240620 model for the main chat  
+Use claude-3-5-sonnet-20241022 model for the main chat  
 Environment variable: `AIDER_SONNET`  
 
 ### `--4`
@@ -620,6 +621,14 @@ Environment variable: `AIDER_SUGGEST_SHELL_COMMANDS`
 Aliases:
   - `--suggest-shell-commands`
   - `--no-suggest-shell-commands`
+
+### `--fancy-input`
+Enable/disable fancy input with history and completion (default: True)  
+Default: True  
+Environment variable: `AIDER_FANCY_INPUT`  
+Aliases:
+  - `--fancy-input`
+  - `--no-fancy-input`
 
 ## Voice Settings:
 

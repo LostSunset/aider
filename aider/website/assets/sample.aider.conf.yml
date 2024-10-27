@@ -29,7 +29,7 @@
 ## Use claude-3-opus-20240229 model for the main chat
 #opus: false
 
-## Use claude-3-5-sonnet-20240620 model for the main chat
+## Use claude-3-5-sonnet-20241022 model for the main chat
 #sonnet: false
 
 ## Use gpt-4-0613 model for the main chat
@@ -340,6 +340,9 @@
 
 ## Enable/disable suggesting shell commands (default: True)
 #suggest-shell-commands: true
+
+## Enable/disable fancy input with history and completion (default: True)
+#fancy-input: true
 
 #################
 # Voice Settings:

@@ -75,7 +75,7 @@ cog.outl("```")
 ## Use claude-3-opus-20240229 model for the main chat
 #AIDER_OPUS=
 
-## Use claude-3-5-sonnet-20240620 model for the main chat
+## Use claude-3-5-sonnet-20241022 model for the main chat
 #AIDER_SONNET=
 
 ## Use gpt-4-0613 model for the main chat
@@ -365,6 +365,9 @@ cog.outl("```")
 
 ## Enable/disable suggesting shell commands (default: True)
 #AIDER_SUGGEST_SHELL_COMMANDS=true
+
+## Enable/disable fancy input with history and completion (default: True)
+#AIDER_FANCY_INPUT=true
 
 #################
 # Voice Settings:

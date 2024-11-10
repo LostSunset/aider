@@ -52,6 +52,7 @@ ANTHROPIC_MODELS = """
 claude-2
 claude-2.1
 claude-3-haiku-20240307
+claude-3-5-haiku-20241022
 claude-3-opus-20240229
 claude-3-sonnet-20240229
 claude-3-5-sonnet-20240620
@@ -233,24 +234,24 @@ MODEL_SETTINGS = [
     ModelSettings(
         "claude-3-opus-20240229",
         "diff",
-        weak_model_name="claude-3-haiku-20240307",
+        weak_model_name="claude-3-5-haiku-20241022",
         use_repo_map=True,
     ),
     ModelSettings(
         "openrouter/anthropic/claude-3-opus",
         "diff",
-        weak_model_name="openrouter/anthropic/claude-3-haiku",
+        weak_model_name="openrouter/anthropic/claude-3-5-haiku",
         use_repo_map=True,
     ),
     ModelSettings(
         "claude-3-sonnet-20240229",
         "whole",
-        weak_model_name="claude-3-haiku-20240307",
+        weak_model_name="claude-3-5-haiku-20241022",
     ),
     ModelSettings(
         "claude-3-5-sonnet-20240620",
         "diff",
-        weak_model_name="claude-3-haiku-20240307",
+        weak_model_name="claude-3-5-haiku-20241022",
         editor_model_name="claude-3-5-sonnet-20240620",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -267,7 +268,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "anthropic/claude-3-5-sonnet-20240620",
         "diff",
-        weak_model_name="anthropic/claude-3-haiku-20240307",
+        weak_model_name="anthropic/claude-3-5-haiku-20241022",
         editor_model_name="anthropic/claude-3-5-sonnet-20240620",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -284,8 +285,25 @@ MODEL_SETTINGS = [
     ModelSettings(
         "anthropic/claude-3-5-sonnet-20241022",
         "diff",
-        weak_model_name="anthropic/claude-3-haiku-20240307",
+        weak_model_name="anthropic/claude-3-5-haiku-20241022",
         editor_model_name="anthropic/claude-3-5-sonnet-20241022",
+        editor_edit_format="editor-diff",
+        use_repo_map=True,
+        examples_as_sys_msg=True,
+        extra_params={
+            "extra_headers": {
+                "anthropic-beta": ANTHROPIC_BETA_HEADER,
+            },
+            "max_tokens": 8192,
+        },
+        cache_control=True,
+        reminder="user",
+    ),
+    ModelSettings(
+        "bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "diff",
+        weak_model_name="bedrock/anthropic.claude-3-5-haiku-20241022-v1:0",
+        editor_model_name="bedrock/anthropic.claude-3-5-sonnet-20241022-v2:0",
         editor_edit_format="editor-diff",
         use_repo_map=True,
         examples_as_sys_msg=True,
@@ -301,7 +319,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "anthropic/claude-3-5-sonnet-latest",
         "diff",
-        weak_model_name="anthropic/claude-3-haiku-20240307",
+        weak_model_name="anthropic/claude-3-5-haiku-20241022",
         editor_model_name="anthropic/claude-3-5-sonnet-20241022",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -318,7 +336,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "claude-3-5-sonnet-20241022",
         "diff",
-        weak_model_name="claude-3-haiku-20240307",
+        weak_model_name="claude-3-5-haiku-20241022",
         editor_model_name="claude-3-5-sonnet-20241022",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -345,6 +363,52 @@ MODEL_SETTINGS = [
         cache_control=True,
     ),
     ModelSettings(
+        "anthropic/claude-3-5-haiku-20241022",
+        "diff",
+        weak_model_name="anthropic/claude-3-5-haiku-20241022",
+        use_repo_map=True,
+        extra_params={
+            "extra_headers": {
+                "anthropic-beta": ANTHROPIC_BETA_HEADER,
+            },
+        },
+        cache_control=True,
+    ),
+    ModelSettings(
+        "bedrock/anthropic.claude-3-5-haiku-20241022-v1:0",
+        "diff",
+        weak_model_name="bedrock/anthropic.claude-3-5-haiku-20241022-v1:0",
+        use_repo_map=True,
+        extra_params={
+            "extra_headers": {
+                "anthropic-beta": ANTHROPIC_BETA_HEADER,
+            },
+        },
+        cache_control=True,
+    ),
+    ModelSettings(
+        "claude-3-5-haiku-20241022",
+        "diff",
+        weak_model_name="claude-3-5-haiku-20241022",
+        use_repo_map=True,
+        examples_as_sys_msg=True,
+        extra_params={
+            "extra_headers": {
+                "anthropic-beta": ANTHROPIC_BETA_HEADER,
+            },
+        },
+        cache_control=True,
+    ),
+    ModelSettings(
+        "vertex_ai/claude-3-5-haiku@20241022",
+        "diff",
+        weak_model_name="vertex_ai/claude-3-5-haiku@20241022",
+        use_repo_map=True,
+        extra_params={
+            "max_tokens": 4096,
+        },
+    ),
+    ModelSettings(
         "claude-3-haiku-20240307",
         "whole",
         weak_model_name="claude-3-haiku-20240307",
@@ -359,7 +423,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "openrouter/anthropic/claude-3.5-sonnet",
         "diff",
-        weak_model_name="openrouter/anthropic/claude-3-haiku",
+        weak_model_name="openrouter/anthropic/claude-3-5-haiku",
         editor_model_name="openrouter/anthropic/claude-3.5-sonnet",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -373,7 +437,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "openrouter/anthropic/claude-3.5-sonnet:beta",
         "diff",
-        weak_model_name="openrouter/anthropic/claude-3-haiku:beta",
+        weak_model_name="openrouter/anthropic/claude-3-5-haiku:beta",
         editor_model_name="openrouter/anthropic/claude-3.5-sonnet:beta",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -389,7 +453,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "vertex_ai/claude-3-5-sonnet@20240620",
         "diff",
-        weak_model_name="vertex_ai/claude-3-haiku@20240307",
+        weak_model_name="vertex_ai/claude-3-5-haiku@20241022",
         editor_model_name="vertex_ai/claude-3-5-sonnet@20240620",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -402,7 +466,7 @@ MODEL_SETTINGS = [
     ModelSettings(
         "vertex_ai/claude-3-5-sonnet-v2@20241022",
         "diff",
-        weak_model_name="vertex_ai/claude-3-haiku@20240307",
+        weak_model_name="vertex_ai/claude-3-5-haiku@20241022",
         editor_model_name="vertex_ai/claude-3-5-sonnet-v2@20241022",
         editor_edit_format="editor-diff",
         use_repo_map=True,
@@ -415,13 +479,13 @@ MODEL_SETTINGS = [
     ModelSettings(
         "vertex_ai/claude-3-opus@20240229",
         "diff",
-        weak_model_name="vertex_ai/claude-3-haiku@20240307",
+        weak_model_name="vertex_ai/claude-3-5-haiku@20241022",
         use_repo_map=True,
     ),
     ModelSettings(
         "vertex_ai/claude-3-sonnet@20240229",
         "whole",
-        weak_model_name="vertex_ai/claude-3-haiku@20240307",
+        weak_model_name="vertex_ai/claude-3-5-haiku@20241022",
     ),
     # Cohere
     ModelSettings(

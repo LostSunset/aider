@@ -355,6 +355,9 @@ class Coder:
 
         for fname in fnames:
             fname = Path(fname)
+            if self.repo and self.repo.git_ignored_file(fname):
+                self.io.tool_warning(f"Skipping {fname} that matches gitignore spec.")
+
             if self.repo and self.repo.ignored_file(fname):
                 self.io.tool_warning(f"Skipping {fname} that matches aiderignore spec.")
                 continue
@@ -956,12 +959,18 @@ class Coder:
                 platform=platform_text
             )
 
+        if self.chat_language:
+            language = self.chat_language
+        else:
+            language = "in the same language they are using"
+
         prompt = prompt.format(
             fence=self.fence,
             lazy_prompt=lazy_prompt,
             platform=platform_text,
             shell_cmd_prompt=shell_cmd_prompt,
             shell_cmd_reminder=shell_cmd_reminder,
+            language=language,
         )
         return prompt
 
@@ -1597,7 +1606,6 @@ class Coder:
                 completion.usage, "cache_creation_input_tokens"
             ):
                 self.message_tokens_sent += prompt_tokens
-                self.message_tokens_sent += cache_hit_tokens
                 self.message_tokens_sent += cache_write_tokens
             else:
                 self.message_tokens_sent += prompt_tokens
@@ -1773,6 +1781,10 @@ class Coder:
         if full_path in self.abs_fnames:
             self.check_for_dirty_commit(path)
             return True
+
+        if self.repo and self.repo.git_ignored_file(path):
+            self.io.tool_warning(f"Skipping edits to {path} that matches gitignore spec.")
+            return
 
         if not Path(full_path).exists():
             if not self.io.confirm_ask("Create new file?", subject=path):

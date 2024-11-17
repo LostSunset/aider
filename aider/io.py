@@ -1,5 +1,6 @@
 import base64
 import os
+import time
 import webbrowser
 from collections import defaultdict
 from dataclasses import dataclass
@@ -333,14 +334,36 @@ class InputOutput:
             self.tool_error("Use --encoding to set the unicode encoding.")
             return
 
-    def write_text(self, filename, content):
+    def write_text(self, filename, content, max_retries=5, initial_delay=0.1):
+        """
+        Writes content to a file, retrying with progressive backoff if the file is locked.
+
+        :param filename: Path to the file to write.
+        :param content: Content to write to the file.
+        :param max_retries: Maximum number of retries if a file lock is encountered.
+        :param initial_delay: Initial delay (in seconds) before the first retry.
+        """
         if self.dry_run:
             return
-        try:
-            with open(str(filename), "w", encoding=self.encoding) as f:
-                f.write(content)
-        except OSError as err:
-            self.tool_error(f"Unable to write file {filename}: {err}")
+
+        delay = initial_delay
+        for attempt in range(max_retries):
+            try:
+                with open(str(filename), "w", encoding=self.encoding) as f:
+                    f.write(content)
+                return  # Successfully wrote the file
+            except PermissionError as err:
+                if attempt < max_retries - 1:
+                    time.sleep(delay)
+                    delay *= 2  # Exponential backoff
+                else:
+                    self.tool_error(
+                        f"Unable to write file {filename} after {max_retries} attempts: {err}"
+                    )
+                    raise
+            except OSError as err:
+                self.tool_error(f"Unable to write file {filename}: {err}")
+                raise
 
     def rule(self):
         if self.pretty:
@@ -732,13 +755,23 @@ class InputOutput:
         editable_files = [f for f in sorted(rel_fnames) if f not in rel_read_only_fnames]
 
         if read_only_files:
-            console.print("Read only files:", style="bold")
-            console.print(Columns(read_only_files))
+            files_with_label = ["Readonly:"] + read_only_files
+            read_only_output = StringIO()
+            Console(file=read_only_output, force_terminal=False).print(Columns(files_with_label))
+            read_only_lines = read_only_output.getvalue().splitlines()
+            console.print(Columns(files_with_label))
+
         if editable_files:
+            files_with_label = editable_files
             if read_only_files:
-                console.print()
-                console.print("Editable files:", style="bold")
-            console.print(Columns(editable_files))
+                files_with_label = ["Editable:"] + editable_files
+                editable_output = StringIO()
+                Console(file=editable_output, force_terminal=False).print(Columns(files_with_label))
+                editable_lines = editable_output.getvalue().splitlines()
+
+                if len(read_only_lines) > 1 or len(editable_lines) > 1:
+                    console.print()
+            console.print(Columns(files_with_label))
 
         return output.getvalue()
 

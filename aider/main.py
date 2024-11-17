@@ -87,15 +87,25 @@ def make_new_repo(git_root, io):
 
 
 def setup_git(git_root, io):
+    try:
+        cwd = Path.cwd()
+    except OSError:
+        cwd = None
+
     repo = None
 
     if git_root:
-        repo = git.Repo(git_root)
-    elif Path.cwd() == Path.home():
+        try:
+            repo = git.Repo(git_root)
+        except ANY_GIT_ERROR:
+            pass
+    elif cwd == Path.home():
         io.tool_warning("You should probably run aider in a directory, not your home dir.")
         return
-    elif io.confirm_ask("No git repo found, create one to track aider's changes (recommended)?"):
-        git_root = str(Path.cwd().resolve())
+    elif cwd and io.confirm_ask(
+        "No git repo found, create one to track aider's changes (recommended)?"
+    ):
+        git_root = str(cwd.resolve())
         repo = make_new_repo(git_root, io)
 
     if not repo:
@@ -322,13 +332,15 @@ def load_dotenv_files(git_root, dotenv_fname, encoding="utf-8"):
 
 
 def register_litellm_models(git_root, model_metadata_fname, io, verbose=False):
-    model_metatdata_files = generate_search_path_list(
-        ".aider.model.metadata.json", git_root, model_metadata_fname
-    )
+    model_metatdata_files = []
 
     # Add the resource file path
     resource_metadata = importlib_resources.files("aider.resources").joinpath("model-metadata.json")
     model_metatdata_files.append(str(resource_metadata))
+
+    model_metatdata_files += generate_search_path_list(
+        ".aider.model.metadata.json", git_root, model_metadata_fname
+    )
 
     try:
         model_metadata_files_loaded = models.register_litellm_models(model_metatdata_files)
@@ -530,7 +542,14 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
 
     all_files = args.files + (args.file or [])
     fnames = [str(Path(fn).resolve()) for fn in all_files]
-    read_only_fnames = [str(Path(fn).resolve()) for fn in (args.read or [])]
+    read_only_fnames = []
+    for fn in args.read or []:
+        path = Path(fn).resolve()
+        if path.is_dir():
+            read_only_fnames.extend(str(f) for f in path.rglob("*") if f.is_file())
+        else:
+            read_only_fnames.append(str(path))
+
     if len(all_files) > 1:
         good = True
         for fname in all_files:

@@ -26,18 +26,45 @@ cog.out(text)
 
 ### main branch
 
+- [Aider works with LLM web chat UIs with `--copy-paste` mode](https://aider.chat/docs/usage/copypaste.html).
+- Better error messages when missing dependencies for Gemini and Bedrock models
+- Added `--api-key provider=key` and `--set-env VAR=value` flags for setting API keys and environment variables
+- Control-D now properly exits the program
+- Fixed shell environment handling when running commands
+- Reorganized command line arguments with improved help messages and grouping
+- Aider wrote 72% of the code in this release.
+
+### Aider v0.67.0
+
+- [Use aider in your IDE or editor](https://aider.chat/docs/usage/watch.html).
+  - Run `aider --watch-files` and it will watch for instructions you add to your source files.
+  - One-liner `# ...` or `// ...` comments that start or end with "AI" are instructions to aider.
+  - When aider sees "AI!" it reads and follows all the instructions in AI comments.
+- Support for new Amazon Bedrock Nova models.
+- When `/run` or `/test` have non-zero exit codes, pre-fill "Fix that" into the next message prompt.
+- `/diff` now invokes `git diff` to use your preferred diff tool.
+- Added Ctrl-Z support for process suspension.
+- Spinner now falls back to ASCII art if fancy symbols throw unicode errors.
+- `--read` now expands `~` home dirs.
+- Enabled exception capture in analytics.
+- [Aider wrote 61% of the code in this release.](https://aider.chat/HISTORY.html)
+
+### Aider v0.66.0
+
 - PDF support for Sonnet and Gemini models.
 - Added `--voice-input-device` to select audio input device for voice recording, by @preynal.
 - Added `--timeout` option to configure API call timeouts.
 - Set cwd to repo root when running shell commands.
+- Added Ctrl-Up/Down keyboard shortcuts for per-message history navigation.
 - Improved error handling for failed .gitignore file operations.
 - Improved error handling for input history file permissions.
 - Improved error handling for analytics file access.
+- Removed spurious warning about disabling pretty in VSCode.
 - Removed broken support for Dart.
 - Bugfix when scraping URLs found in chat messages.
 - Better handling of __version__ import errors.
 - Improved `/drop` command to support substring matching for non-glob patterns.
-- Aider wrote 79% of the code in this release.
+- Aider wrote 82% of the code in this release.
 
 ### Aider v0.65.1
 

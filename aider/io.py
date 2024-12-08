@@ -1,5 +1,6 @@
 import base64
 import os
+import signal
 import time
 import webbrowser
 from collections import defaultdict
@@ -11,8 +12,10 @@ from pathlib import Path
 from prompt_toolkit.completion import Completer, Completion, ThreadedCompleter
 from prompt_toolkit.cursor_shapes import ModalCursorShapeConfig
 from prompt_toolkit.enums import EditingMode
+from prompt_toolkit.filters import Condition
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.keys import Keys
 from prompt_toolkit.lexers import PygmentsLexer
 from prompt_toolkit.shortcuts import CompleteStyle, PromptSession
 from prompt_toolkit.styles import Style
@@ -173,6 +176,7 @@ class AutoCompleter(Completer):
 class InputOutput:
     num_error_outputs = 0
     num_user_asks = 0
+    clipboard_watcher = None
 
     def __init__(
         self,
@@ -197,8 +201,10 @@ class InputOutput:
         llm_history_file=None,
         editingmode=EditingMode.EMACS,
         fancy_input=True,
+        file_watcher=None,
     ):
         self.placeholder = None
+        self.interrupted = False
         self.never_prompts = set()
         self.editingmode = editingmode
         no_color = os.environ.get("NO_COLOR")
@@ -261,6 +267,8 @@ class InputOutput:
         else:
             self.console = Console(force_terminal=False, no_color=True)  # non-pretty
 
+        self.file_watcher = file_watcher
+
     def _get_style(self):
         style_dict = {}
         if not self.pretty:
@@ -314,7 +322,7 @@ class InputOutput:
             self.tool_error(f"{filename}: {e}")
             return
 
-    def read_text(self, filename):
+    def read_text(self, filename, silent=False):
         if is_image_file(filename):
             return self.read_image(filename)
 
@@ -322,17 +330,21 @@ class InputOutput:
             with open(str(filename), "r", encoding=self.encoding) as f:
                 return f.read()
         except OSError as err:
-            self.tool_error(f"{filename}: unable to read: {err}")
+            if not silent:
+                self.tool_error(f"{filename}: unable to read: {err}")
             return
         except FileNotFoundError:
-            self.tool_error(f"{filename}: file not found error")
+            if not silent:
+                self.tool_error(f"{filename}: file not found error")
             return
         except IsADirectoryError:
-            self.tool_error(f"{filename}: is a directory")
+            if not silent:
+                self.tool_error(f"{filename}: is a directory")
             return
         except UnicodeError as e:
-            self.tool_error(f"{filename}: {e}")
-            self.tool_error("Use --encoding to set the unicode encoding.")
+            if not silent:
+                self.tool_error(f"{filename}: {e}")
+                self.tool_error("Use --encoding to set the unicode encoding.")
             return
 
     def write_text(self, filename, content, max_retries=5, initial_delay=0.1):
@@ -373,6 +385,13 @@ class InputOutput:
         else:
             print()
 
+    def interrupt_input(self):
+        if self.prompt_session and self.prompt_session.app:
+            # Store any partial input before interrupting
+            self.placeholder = self.prompt_session.app.current_buffer.text
+            self.interrupted = True
+            self.prompt_session.app.exit()
+
     def get_input(
         self,
         root,
@@ -411,12 +430,31 @@ class InputOutput:
             )
         )
 
+        def suspend_to_bg(event):
+            """Suspend currently running application."""
+            event.app.suspend_to_background()
+
         kb = KeyBindings()
+
+        @kb.add(Keys.ControlZ, filter=Condition(lambda: hasattr(signal, "SIGTSTP")))
+        def _(event):
+            "Suspend to background with ctrl-z"
+            suspend_to_bg(event)
 
         @kb.add("c-space")
         def _(event):
             "Ignore Ctrl when pressing space bar"
             event.current_buffer.insert_text(" ")
+
+        @kb.add("c-up")
+        def _(event):
+            "Navigate backward through history"
+            event.current_buffer.history_backward()
+
+        @kb.add("c-down")
+        def _(event):
+            "Navigate forward through history"
+            event.current_buffer.history_forward()
 
         @kb.add("escape", "c-m", eager=True)
         def _(event):
@@ -432,6 +470,13 @@ class InputOutput:
                     default = self.placeholder or ""
                     self.placeholder = None
 
+                    self.interrupted = False
+                    if not multiline_input:
+                        if self.file_watcher:
+                            self.file_watcher.start()
+                        if self.clipboard_watcher:
+                            self.clipboard_watcher.start()
+
                     line = self.prompt_session.prompt(
                         show,
                         default=default,
@@ -443,9 +488,30 @@ class InputOutput:
                     )
                 else:
                     line = input(show)
+
+                # Check if we were interrupted by a file change
+                if self.interrupted:
+                    line = line or ""
+                    if self.file_watcher:
+                        cmd = self.file_watcher.process_changes()
+                        return cmd
+
+            except EOFError:
+                raise
+            except Exception as err:
+                import traceback
+
+                self.tool_error(str(err))
+                self.tool_error(traceback.format_exc())
+                return ""
             except UnicodeEncodeError as err:
                 self.tool_error(str(err))
                 return ""
+            finally:
+                if self.file_watcher:
+                    self.file_watcher.stop()
+                if self.clipboard_watcher:
+                    self.clipboard_watcher.stop()
 
             if line.strip("\r\n") and not multiline_input:
                 stripped = line.strip("\r\n")

@@ -43,6 +43,8 @@ class Commands:
             verify_ssl=self.verify_ssl,
             args=self.args,
             parser=self.parser,
+            verbose=self.verbose,
+            editor=self.editor,
         )
 
     def __init__(
@@ -588,6 +590,10 @@ class Commands:
 
         self.io.tool_output(f"Diff since {commit_before_message[:7]}...")
 
+        if self.coder.pretty:
+            run_cmd(f"git diff {commit_before_message}")
+            return
+
         diff = self.coder.repo.diff_commits(
             self.coder.pretty,
             commit_before_message,
@@ -785,7 +791,8 @@ class Commands:
                     self.io.tool_error(f"Unable to read {matched_file}")
                 else:
                     self.coder.abs_fnames.add(abs_file_path)
-                    self.io.tool_output(f"Added {matched_file} to the chat")
+                    fname = self.coder.get_rel_fname(abs_file_path)
+                    self.io.tool_output(f"Added {fname} to the chat")
                     self.coder.check_added_files()
 
     def completions_drop(self):
@@ -919,6 +926,9 @@ class Commands:
                 dict(role="user", content=msg),
                 dict(role="assistant", content="Ok."),
             ]
+
+            if add and exit_status != 0:
+                self.io.placeholder = "Fix that"
 
     def cmd_exit(self, args):
         "Exit the application"
@@ -1388,6 +1398,41 @@ class Commands:
         user_input = pipe_editor(initial_content, suffix="md", editor=self.editor)
         if user_input.strip():
             self.io.set_placeholder(user_input.rstrip())
+
+    def cmd_copy_context(self, args=None):
+        """Copy the current chat context as markdown, suitable to paste into a web UI"""
+
+        chunks = self.coder.format_chat_chunks()
+
+        markdown = ""
+
+        # Only include specified chunks in order
+        for messages in [chunks.repo, chunks.readonly_files, chunks.chat_files]:
+            for msg in messages:
+                # Only include user messages
+                if msg["role"] != "user":
+                    continue
+
+                content = msg["content"]
+
+                # Handle image/multipart content
+                if isinstance(content, list):
+                    for part in content:
+                        if part.get("type") == "text":
+                            markdown += part["text"] + "\n\n"
+                else:
+                    markdown += content + "\n\n"
+
+        markdown += """
+Just tell me how to edit the files to make the changes.
+Don't give me back entire files.
+Just show me the edits I need to make.
+
+
+"""
+
+        pyperclip.copy(markdown)
+        self.io.tool_output("Copied code context to clipboard.")
 
 
 def expand_subdir(file_path):

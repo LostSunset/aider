@@ -8,6 +8,7 @@ try:
     ANY_GIT_ERROR = [
         git.exc.ODBError,
         git.exc.GitError,
+        git.exc.InvalidGitRepositoryError,
     ]
 except ImportError:
     git = None
@@ -26,6 +27,8 @@ ANY_GIT_ERROR += [
     BufferError,
     TypeError,
     ValueError,
+    AttributeError,
+    AssertionError,
 ]
 ANY_GIT_ERROR = tuple(ANY_GIT_ERROR)
 

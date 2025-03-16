@@ -207,10 +207,22 @@ class Coder:
             prefix = "Model"
 
         output = f"{prefix}: {main_model.name} with {self.edit_format} edit format"
+
+        # Check for thinking token budget
+        thinking_tokens = main_model.get_thinking_tokens(main_model)
+        if thinking_tokens:
+            output += f", {thinking_tokens} think tokens"
+
+        # Check for reasoning effort
+        reasoning_effort = main_model.get_reasoning_effort(main_model)
+        if reasoning_effort:
+            output += f", reasoning {reasoning_effort}"
+
         if self.add_cache_headers or main_model.caches_by_default:
             output += ", prompt cache"
         if main_model.info.get("supports_assistant_prefill"):
             output += ", infinite output"
+
         lines.append(output)
 
         if self.edit_format == "architect":
@@ -310,6 +322,7 @@ class Coder:
         ignore_mentions=None,
         file_watcher=None,
         auto_copy_context=False,
+        auto_accept_architect=True,
     ):
         # Fill in a dummy Analytics if needed, but it is never .enable()'d
         self.analytics = analytics if analytics is not None else Analytics()
@@ -322,6 +335,7 @@ class Coder:
         self.abs_root_path_cache = {}
 
         self.auto_copy_context = auto_copy_context
+        self.auto_accept_architect = auto_accept_architect
 
         self.ignore_mentions = ignore_mentions
         if not self.ignore_mentions:
@@ -383,7 +397,7 @@ class Coder:
         self.main_model = main_model
         # Set the reasoning tag name based on model settings or default
         self.reasoning_tag_name = (
-            self.main_model.remove_reasoning if self.main_model.remove_reasoning else REASONING_TAG
+            self.main_model.reasoning_tag if self.main_model.reasoning_tag else REASONING_TAG
         )
 
         self.stream = stream and main_model.streaming
@@ -1712,7 +1726,10 @@ class Coder:
         try:
             reasoning_content = completion.choices[0].message.reasoning_content
         except AttributeError:
-            reasoning_content = None
+            try:
+                reasoning_content = completion.choices[0].message.reasoning
+            except AttributeError:
+                reasoning_content = None
 
         try:
             self.partial_response_content = completion.choices[0].message.content or ""
@@ -1775,22 +1792,27 @@ class Coder:
                 pass
 
             text = ""
+
             try:
                 reasoning_content = chunk.choices[0].delta.reasoning_content
-                if reasoning_content:
-                    if not self.got_reasoning_content:
-                        text += f"<{REASONING_TAG}>\n\n"
-                    text += reasoning_content
-                    self.got_reasoning_content = True
-                    received_content = True
             except AttributeError:
-                pass
+                try:
+                    reasoning_content = chunk.choices[0].delta.reasoning
+                except AttributeError:
+                    reasoning_content = None
+
+            if reasoning_content:
+                if not self.got_reasoning_content:
+                    text += f"<{REASONING_TAG}>\n\n"
+                text += reasoning_content
+                self.got_reasoning_content = True
+                received_content = True
 
             try:
                 content = chunk.choices[0].delta.content
                 if content:
                     if self.got_reasoning_content and not self.ended_reasoning_content:
-                        text += f"\n\n</{REASONING_TAG}>\n\n"
+                        text += f"\n\n</{self.reasoning_tag_name}>\n\n"
                         self.ended_reasoning_content = True
 
                     text += content

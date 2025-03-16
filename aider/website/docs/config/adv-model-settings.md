@@ -172,6 +172,7 @@ cog.out("```\n")
   streaming: true
   editor_model_name: null
   editor_edit_format: null
+  reasoning_tag: null
   remove_reasoning: null
   system_prompt_prefix: null
 
@@ -444,6 +445,9 @@ cog.out("```\n")
 - name: claude-3-sonnet-20240229
   weak_model_name: claude-3-5-haiku-20241022
 
+- name: cohere_chat/command-a-03-2025
+  examples_as_sys_msg: true
+
 - name: command-r-08-2024
   weak_model_name: command-r-08-2024
   use_repo_map: true
@@ -512,7 +516,7 @@ cog.out("```\n")
   use_temperature: false
   editor_model_name: fireworks_ai/accounts/fireworks/models/deepseek-v3
   editor_edit_format: editor-diff
-  remove_reasoning: think
+  reasoning_tag: think
 
 - name: fireworks_ai/accounts/fireworks/models/deepseek-v3
   edit_format: diff
@@ -533,7 +537,7 @@ cog.out("```\n")
   use_temperature: 0.6
   editor_model_name: fireworks_ai/accounts/fireworks/models/qwen2p5-coder-32b-instruct
   editor_edit_format: editor-diff
-  remove_reasoning: think
+  reasoning_tag: think
 
 - name: gemini/gemini-1.5-flash-002
 
@@ -574,6 +578,9 @@ cog.out("```\n")
 - name: gemini/gemini-exp-1206
   edit_format: diff
   use_repo_map: true
+
+- name: gemini/gemma-3-27b-it
+  use_system_prompt: false
 
 - name: gpt-3.5-turbo
   weak_model_name: gpt-4o-mini
@@ -704,7 +711,7 @@ cog.out("```\n")
   use_temperature: 0.6
   editor_model_name: groq/qwen-2.5-coder-32b
   editor_edit_format: editor-diff
-  remove_reasoning: think
+  reasoning_tag: think
 
 - name: o1
   edit_format: diff
@@ -871,6 +878,9 @@ cog.out("```\n")
   editor_model_name: openrouter/anthropic/claude-3.7-sonnet
   editor_edit_format: editor-diff
 
+- name: openrouter/cohere/command-a-03-2025
+  examples_as_sys_msg: true
+
 - name: openrouter/deepseek/deepseek-chat
   edit_format: diff
   use_repo_map: true
@@ -902,8 +912,8 @@ cog.out("```\n")
   examples_as_sys_msg: true
   extra_params:
     max_tokens: 8192
+    include_reasoning: true
   caches_by_default: true
-  use_temperature: false
   editor_model_name: openrouter/deepseek/deepseek-chat
   editor_edit_format: editor-diff
 
@@ -930,6 +940,9 @@ cog.out("```\n")
   use_temperature: false
   editor_model_name: openrouter/deepseek/deepseek-r1:free
   editor_edit_format: editor-diff
+
+- name: openrouter/google/gemma-3-27b-it:free
+  use_system_prompt: false
 
 - name: openrouter/meta-llama/llama-3-70b-instruct
   edit_format: diff

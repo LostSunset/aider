@@ -20,7 +20,7 @@ Aider lets you pair program with LLMs to start a new project or build on your ex
 
 <p align="center">
 <!--[[[cog
-from scripts.badges import get_badges_md
+from scripts.homepage import get_badges_md
 text = get_badges_md()
 cog.out(text)
 ]]]-->
@@ -33,21 +33,72 @@ src="https://img.shields.io/badge/📈%20Tokens%2Fweek-15B-3498db?style=flat-squ
   <a href="https://openrouter.ai/"><img alt="OpenRouter Ranking" title="Aider's ranking among applications on the OpenRouter platform"
 src="https://img.shields.io/badge/🏆%20OpenRouter-Top%2020-9b59b6?style=flat-square&labelColor=555555"/></a>
   <a href="https://aider.chat/HISTORY.html"><img alt="Singularity" title="Percentage of the new code in Aider's last release written by Aider itself"
-src="https://img.shields.io/badge/🔄%20Singularity-92%25-e74c3c?style=flat-square&labelColor=555555"/></a>
+src="https://img.shields.io/badge/🔄%20Singularity-65%25-e74c3c?style=flat-square&labelColor=555555"/></a>
 <!--[[[end]]]-->  
 </p>
 
 ## Features
 
-- 🧠 **[Cloud and local LLMs](https://aider.chat/docs/llms.html)** - Aider works best with Claude 3.7 Sonnet, DeepSeek R1 & Chat V3, OpenAI o1, o3-mini & GPT-4o, but can connect to almost any LLM, including local models.
-- 🗺️ **[Maps your codebase](https://aider.chat/docs/repomap.html)** - Aider makes a map of your entire codebase, which helps it work well in larger projects.
-- `</>` **[100+ code languages](https://aider.chat/docs/languages.html)** - Aider works with most popular programming languages: python, javascript, rust, ruby, go, cpp, php, html, css, and dozens more.
-- 🔀 **[Git integration](https://aider.chat/docs/git.html)** - Aider automatically commits changes with sensible commit messages. Use familiar git tools to easily diff, manage and undo AI changes.
-- 🖥️ **[Use in your IDE](https://aider.chat/docs/usage/watch.html)** - Use aider from within your favorite IDE or editor. Ask for changes by adding comments to your code and aider will get to work.
-- 🖼️ **[Images & web pages](https://aider.chat/docs/usage/images-urls.html)** - Add images and web pages to the chat to provide visual context, screenshots, reference docs, etc.
-- 🎤 **[Voice-to-code](https://aider.chat/docs/usage/voice.html)** - Speak with aider about your code! Request new features, test cases or bug fixes using your voice and let aider implement the changes.
-- ✅ **[Linting & testing](https://aider.chat/docs/usage/lint-test.html)** - Automatically lint and test your code every time aider makes changes. Aider can fix problems detected by your linters and test suites.
-- 📋 **[Copy/paste to web chat](https://aider.chat/docs/usage/copypaste.html)** - Work with any LLM via its web chat interface. Aider streamlines copy/pasting code context and edits back and forth with a browser.
+### [Cloud and local LLMs](https://aider.chat/docs/llms.html)
+
+<a href="https://aider.chat/docs/llms.html"><img src="https://aider.chat/assets/icons/brain.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Aider works best with Claude 3.7 Sonnet, DeepSeek R1 & Chat V3, OpenAI o1, o3-mini & GPT-4o, but can connect to almost any LLM, including local models.
+
+<br>
+
+### [Maps your codebase](https://aider.chat/docs/repomap.html)
+
+<a href="https://aider.chat/docs/repomap.html"><img src="https://aider.chat/assets/icons/map-outline.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Aider makes a map of your entire codebase, which helps it work well in larger projects.
+
+<br>
+
+### [100+ code languages](https://aider.chat/docs/languages.html)
+
+<a href="https://aider.chat/docs/languages.html"><img src="https://aider.chat/assets/icons/code-tags.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Aider works with most popular programming languages: python, javascript, rust, ruby, go, cpp, php, html, css, and dozens more.
+
+<br>
+
+### [Git integration](https://aider.chat/docs/git.html)
+
+<a href="https://aider.chat/docs/git.html"><img src="https://aider.chat/assets/icons/source-branch.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Aider automatically commits changes with sensible commit messages. Use familiar git tools to easily diff, manage and undo AI changes.
+
+<br>
+
+### [Use in your IDE](https://aider.chat/docs/usage/watch.html)
+
+<a href="https://aider.chat/docs/usage/watch.html"><img src="https://aider.chat/assets/icons/monitor.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Use aider from within your favorite IDE or editor. Ask for changes by adding comments to your code and aider will get to work.
+
+<br>
+
+### [Images & web pages](https://aider.chat/docs/usage/images-urls.html)
+
+<a href="https://aider.chat/docs/usage/images-urls.html"><img src="https://aider.chat/assets/icons/image-multiple.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Add images and web pages to the chat to provide visual context, screenshots, reference docs, etc.
+
+<br>
+
+### [Voice-to-code](https://aider.chat/docs/usage/voice.html)
+
+<a href="https://aider.chat/docs/usage/voice.html"><img src="https://aider.chat/assets/icons/microphone.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Speak with aider about your code! Request new features, test cases or bug fixes using your voice and let aider implement the changes.
+
+<br>
+
+### [Linting & testing](https://aider.chat/docs/usage/lint-test.html)
+
+<a href="https://aider.chat/docs/usage/lint-test.html"><img src="https://aider.chat/assets/icons/check-all.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Automatically lint and test your code every time aider makes changes. Aider can fix problems detected by your linters and test suites.
+
+<br>
+
+### [Copy/paste to web chat](https://aider.chat/docs/usage/copypaste.html)
+
+<a href="https://aider.chat/docs/usage/copypaste.html"><img src="https://aider.chat/assets/icons/content-copy.svg" width="32" height="32" align="left" valign="middle" style="margin-right:10px"></a>
+Work with any LLM via its web chat interface. Aider streamlines copy/pasting code context and edits back and forth with a browser.
 
 ## Getting Started
 
@@ -109,3 +160,11 @@ See the [installation instructions](https://aider.chat/docs/install.html) and [u
 - *"Hands down, this is the best AI coding assistant tool so far."* — [IndyDevDan](https://www.youtube.com/watch?v=MPYFPvxfGZs)
 - *"[Aider] changed my daily coding workflows. It's mind-blowing how a single Python application can change your life."* — [maledorak](https://discord.com/channels/1131200896827654144/1131200896827654149/1258453375620747264)
 - *"Best agent for actual dev work in existing codebases."* — [Nick Dobos](https://twitter.com/NickADobos/status/1690408967963652097?s=20)
+- *"One of my favorite pieces of software. Blazing trails on new paradigms!"* — [Chris Wall](https://x.com/chris65536/status/1905053299251798432)
+- *"Aider has been revolutionary for me and my work."* — [Starry Hope](https://x.com/starryhopeblog/status/1904985812137132056)
+- *"Try aider! One of the best ways to vibe code."* — [Chris Wall](https://x.com/Chris65536/status/1905053418961391929)
+- *"Aider is hands down the best. And it's free and opensource."* — [AriyaSavakaLurker](https://www.reddit.com/r/ChatGPTCoding/comments/1ik16y6/whats_your_take_on_aider/mbip39n/)
+- *"Aider is also my best friend."* — [jzn21](https://www.reddit.com/r/ChatGPTCoding/comments/1heuvuo/aider_vs_cline_vs_windsurf_vs_cursor/m27dcnb/)
+- *"Try Aider, it's worth it."* — [jorgejhms](https://www.reddit.com/r/ChatGPTCoding/comments/1heuvuo/aider_vs_cline_vs_windsurf_vs_cursor/m27cp99/)
+- *"I like aider :)"* — [Chenwei Cui](https://x.com/ccui42/status/1904965344999145698)
+- *"Aider is the precision tool of LLM code gen. It is minimal, thoughtful and capable of surgical changes to your codebase all while keeping the developer in control."* — [Reilly Sweetland](https://x.com/rsweetland/status/1904963807237259586)

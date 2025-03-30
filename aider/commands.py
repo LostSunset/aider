@@ -28,8 +28,9 @@ from .dump import dump  # noqa: F401
 
 
 class SwitchCoder(Exception):
-    def __init__(self, **kwargs):
+    def __init__(self, placeholder=None, **kwargs):
         self.kwargs = kwargs
+        self.placeholder = placeholder
 
 
 class Commands:
@@ -92,7 +93,17 @@ class Commands:
             weak_model=self.coder.main_model.weak_model.name,
         )
         models.sanity_check_models(self.io, model)
-        raise SwitchCoder(main_model=model)
+
+        # Check if the current edit format is the default for the old model
+        old_model_edit_format = self.coder.main_model.edit_format
+        current_edit_format = self.coder.edit_format
+
+        new_edit_format = current_edit_format
+        if current_edit_format == old_model_edit_format:
+            # If the user was using the old model's default, switch to the new model's default
+            new_edit_format = model.edit_format
+
+        raise SwitchCoder(main_model=model, edit_format=new_edit_format)
 
     def cmd_editor_model(self, args):
         "Switch the Editor Model to a new LLM"
@@ -146,6 +157,10 @@ class Commands:
                         "Work with an architect model to design code changes, and an editor to make"
                         " them."
                     ),
+                ),
+                (
+                    "context",
+                    "Automatically identify which files will need to be edited.",
                 ),
             ]
         )
@@ -1126,6 +1141,9 @@ class Commands:
     def completions_architect(self):
         raise CommandCompletionException()
 
+    def completions_context(self):
+        raise CommandCompletionException()
+
     def cmd_ask(self, args):
         """Ask questions about the code base without editing any files. If no prompt provided, switches to ask mode."""  # noqa
         return self._generic_chat_command(args, "ask")
@@ -1138,7 +1156,11 @@ class Commands:
         """Enter architect/editor mode using 2 different models. If no prompt provided, switches to architect/editor mode."""  # noqa
         return self._generic_chat_command(args, "architect")
 
-    def _generic_chat_command(self, args, edit_format):
+    def cmd_context(self, args):
+        """Enter context mode to see surrounding code context. If no prompt provided, switches to context mode."""  # noqa
+        return self._generic_chat_command(args, "context", placeholder=args.strip() or None)
+
+    def _generic_chat_command(self, args, edit_format, placeholder=None):
         if not args.strip():
             # Switch to the corresponding chat mode if no args provided
             return self.cmd_chat_mode(edit_format)
@@ -1155,11 +1177,13 @@ class Commands:
         user_msg = args
         coder.run(user_msg)
 
+        # Use the provided placeholder if any
         raise SwitchCoder(
             edit_format=self.coder.edit_format,
             summarize_from_coder=False,
             from_coder=coder,
             show_announcements=False,
+            placeholder=placeholder,
         )
 
     def get_help_md(self):
@@ -1472,17 +1496,21 @@ class Commands:
         if user_input.strip():
             self.io.set_placeholder(user_input.rstrip())
 
+    def cmd_edit(self, args=""):
+        "Alias for /editor: Open an editor to write a prompt"
+        return self.cmd_editor(args)
+
     def cmd_think_tokens(self, args):
         "Set the thinking token budget (supports formats like 8096, 8k, 10.5k, 0.5M)"
         model = self.coder.main_model
 
         if not args.strip():
             # Display current value if no args are provided
-            formatted_budget = model.get_thinking_tokens(model)
+            formatted_budget = model.get_thinking_tokens()
             if formatted_budget is None:
                 self.io.tool_output("Thinking tokens are not currently set.")
             else:
-                budget = model.extra_params["thinking"].get("budget_tokens")
+                budget = model.get_raw_thinking_tokens()
                 self.io.tool_output(
                     f"Current thinking token budget: {budget:,} tokens ({formatted_budget})."
                 )
@@ -1491,8 +1519,8 @@ class Commands:
         value = args.strip()
         model.set_thinking_tokens(value)
 
-        formatted_budget = model.get_thinking_tokens(model)
-        budget = model.extra_params["thinking"].get("budget_tokens")
+        formatted_budget = model.get_thinking_tokens()
+        budget = model.get_raw_thinking_tokens()
 
         self.io.tool_output(f"Set thinking token budget to {budget:,} tokens ({formatted_budget}).")
         self.io.tool_output()
@@ -1507,7 +1535,7 @@ class Commands:
 
         if not args.strip():
             # Display current value if no args are provided
-            reasoning_value = model.get_reasoning_effort(model)
+            reasoning_value = model.get_reasoning_effort()
             if reasoning_value is None:
                 self.io.tool_output("Reasoning effort is not currently set.")
             else:
@@ -1516,7 +1544,7 @@ class Commands:
 
         value = args.strip()
         model.set_reasoning_effort(value)
-        reasoning_value = model.get_reasoning_effort(model)
+        reasoning_value = model.get_reasoning_effort()
         self.io.tool_output(f"Set reasoning effort to {reasoning_value}")
         self.io.tool_output()
 

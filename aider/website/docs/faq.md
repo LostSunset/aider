@@ -264,10 +264,9 @@ tr:hover { background-color: #f5f5f5; }
 </style>
 <table>
 <tr><th>Model Name</th><th class='right'>Total Tokens</th><th class='right'>Percent</th></tr>
-<tr><td>anthropic/claude-3-7-sonnet-20250219</td><td class='right'>3,069,752</td><td class='right'>99.0%</td></tr>
-<tr><td>openrouter/anthropic/claude-3.7-sonnet</td><td class='right'>11,761</td><td class='right'>0.4%</td></tr>
-<tr><td>openrouter/openai/o3-mini</td><td class='right'>11,138</td><td class='right'>0.4%</td></tr>
-<tr><td>o3-mini</td><td class='right'>8,491</td><td class='right'>0.3%</td></tr>
+<tr><td>anthropic/claude-3-7-sonnet-20250219</td><td class='right'>1,466,934</td><td class='right'>59.5%</td></tr>
+<tr><td>gemini/gemini-2.5-pro-exp-03-25</td><td class='right'>968,704</td><td class='right'>39.3%</td></tr>
+<tr><td>deepseek/deepseek-chat</td><td class='right'>30,307</td><td class='right'>1.2%</td></tr>
 </table>
 <!--[[[end]]]-->
 

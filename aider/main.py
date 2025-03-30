@@ -30,6 +30,7 @@ from aider.history import ChatSummary
 from aider.io import InputOutput
 from aider.llm import litellm  # noqa: F401; properly init litellm on launch
 from aider.models import ModelSettings
+from aider.onboarding import select_default_model
 from aider.repo import ANY_GIT_ERROR, GitRepo
 from aider.report import report_uncaught_exceptions
 from aider.versioncheck import check_version, install_from_main_branch, install_upgrade
@@ -357,11 +358,21 @@ def register_models(git_root, model_settings_fname, io, verbose=False):
 
 
 def load_dotenv_files(git_root, dotenv_fname, encoding="utf-8"):
+    # Standard .env file search path
     dotenv_files = generate_search_path_list(
         ".env",
         git_root,
         dotenv_fname,
     )
+
+    # Explicitly add the OAuth keys file to the beginning of the list
+    oauth_keys_file = Path.home() / ".aider" / "oauth-keys.env"
+    if oauth_keys_file.exists():
+        # Insert at the beginning so it's loaded first (and potentially overridden)
+        dotenv_files.insert(0, str(oauth_keys_file.resolve()))
+        # Remove duplicates if it somehow got included by generate_search_path_list
+        dotenv_files = list(dict.fromkeys(dotenv_files))
+
     loaded = []
     for fname in dotenv_files:
         try:
@@ -568,6 +579,9 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
         io = get_io(False)
         io.tool_warning("Terminal does not support pretty output (UnicodeDecodeError)")
 
+    if args.stream and args.cache_prompts:
+        io.tool_warning("Cost estimates may be inaccurate when using streaming and caching.")
+
     # Process any environment variables set via --set-env
     if args.set_env:
         for env_setting in args.set_env:
@@ -714,11 +728,6 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     if args.check_update:
         check_version(io, verbose=args.verbose)
 
-    if args.list_models:
-        models.print_matching_models(io, args.list_models)
-        analytics.event("exit", reason="Listed models")
-        return 0
-
     if args.git:
         git_root = setup_git(git_root, io)
         if args.gitignore:
@@ -738,6 +747,11 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     register_models(git_root, args.model_settings_file, io, verbose=args.verbose)
     register_litellm_models(git_root, args.model_metadata_file, io, verbose=args.verbose)
 
+    if args.list_models:
+        models.print_matching_models(io, args.list_models)
+        analytics.event("exit", reason="Listed models")
+        return 0
+
     # Process any command line aliases
     if args.alias:
         for alias_def in args.alias:
@@ -751,27 +765,11 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
             alias, model = parts
             models.MODEL_ALIASES[alias.strip()] = model.strip()
 
-    if not args.model:
-        # Select model based on available API keys
-        model_key_pairs = [
-            ("ANTHROPIC_API_KEY", "sonnet"),
-            ("DEEPSEEK_API_KEY", "deepseek"),
-            ("OPENROUTER_API_KEY", "openrouter/anthropic/claude-3.7-sonnet"),
-            ("OPENAI_API_KEY", "gpt-4o"),
-            ("GEMINI_API_KEY", "flash"),
-        ]
-
-        for env_key, model_name in model_key_pairs:
-            if os.environ.get(env_key):
-                args.model = model_name
-                io.tool_warning(
-                    f"Found {env_key} so using {model_name} since no --model was specified."
-                )
-                break
-        if not args.model:
-            io.tool_error("You need to specify a --model and an --api-key to use.")
-            io.offer_url(urls.models_and_keys, "Open documentation url for more info?")
-            return 1
+    selected_model_name = select_default_model(args, io, analytics)
+    if not selected_model_name:
+        # Error message and analytics event are handled within select_default_model
+        return 1
+    args.model = selected_model_name  # Update args with the selected model
 
     main_model = models.Model(
         args.model,
@@ -917,6 +915,9 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
         map_tokens = main_model.get_repo_map_tokens()
     else:
         map_tokens = args.map_tokens
+
+    # Track auto-commits configuration
+    analytics.event("auto_commits", enabled=bool(args.auto_commits))
 
     try:
         coder = Coder.create(
@@ -1108,6 +1109,10 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
             return
         except SwitchCoder as switch:
             coder.ok_to_warm_cache = False
+
+            # Set the placeholder if provided
+            if hasattr(switch, "placeholder") and switch.placeholder is not None:
+                io.placeholder = switch.placeholder
 
             kwargs = dict(io=io, from_coder=coder)
             kwargs.update(switch.kwargs)

@@ -209,12 +209,12 @@ class Coder:
         output = f"{prefix}: {main_model.name} with {self.edit_format} edit format"
 
         # Check for thinking token budget
-        thinking_tokens = main_model.get_thinking_tokens(main_model)
+        thinking_tokens = main_model.get_thinking_tokens()
         if thinking_tokens:
             output += f", {thinking_tokens} think tokens"
 
         # Check for reasoning effort
-        reasoning_effort = main_model.get_reasoning_effort(main_model)
+        reasoning_effort = main_model.get_reasoning_effort()
         if reasoning_effort:
             output += f", reasoning {reasoning_effort}"
 
@@ -1456,7 +1456,8 @@ class Coder:
                 return
 
             try:
-                self.reply_completed()
+                if self.reply_completed():
+                    return
             except KeyboardInterrupt:
                 interrupted = True
 
@@ -1599,22 +1600,26 @@ class Coder:
                 )
             ]
 
-    def get_file_mentions(self, content):
+    def get_file_mentions(self, content, ignore_current=False):
         words = set(word for word in content.split())
 
         # drop sentence punctuation from the end
         words = set(word.rstrip(",.!;:?") for word in words)
 
         # strip away all kinds of quotes
-        quotes = "".join(['"', "'", "`"])
+        quotes = "\"'`*_"
         words = set(word.strip(quotes) for word in words)
 
-        addable_rel_fnames = self.get_addable_relative_files()
+        if ignore_current:
+            addable_rel_fnames = self.get_all_relative_files()
+            existing_basenames = {}
+        else:
+            addable_rel_fnames = self.get_addable_relative_files()
 
-        # Get basenames of files already in chat or read-only
-        existing_basenames = {os.path.basename(f) for f in self.get_inchat_relative_files()} | {
-            os.path.basename(self.get_rel_fname(f)) for f in self.abs_read_only_fnames
-        }
+            # Get basenames of files already in chat or read-only
+            existing_basenames = {os.path.basename(f) for f in self.get_inchat_relative_files()} | {
+                os.path.basename(self.get_rel_fname(f)) for f in self.abs_read_only_fnames
+            }
 
         mentioned_rel_fnames = set()
         fname_to_rel_fnames = {}
@@ -1955,11 +1960,6 @@ class Coder:
             f"Cost: ${format_cost(self.message_cost)} message,"
             f" ${format_cost(self.total_cost)} session."
         )
-
-        if self.add_cache_headers and self.stream:
-            warning = " Use --no-stream for accurate caching costs."
-            self.usage_report = tokens_report + "\n" + cost_report + warning
-            return
 
         if cache_hit_tokens and cache_write_tokens:
             sep = "\n"

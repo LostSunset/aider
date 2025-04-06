@@ -30,7 +30,7 @@ from aider.history import ChatSummary
 from aider.io import InputOutput
 from aider.llm import litellm  # noqa: F401; properly init litellm on launch
 from aider.models import ModelSettings
-from aider.onboarding import select_default_model
+from aider.onboarding import offer_openrouter_oauth, select_default_model
 from aider.repo import ANY_GIT_ERROR, GitRepo
 from aider.report import report_uncaught_exceptions
 from aider.versioncheck import check_version, install_from_main_branch, install_upgrade
@@ -579,9 +579,6 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
         io = get_io(False)
         io.tool_warning("Terminal does not support pretty output (UnicodeDecodeError)")
 
-    if args.stream and args.cache_prompts:
-        io.tool_warning("Cost estimates may be inaccurate when using streaming and caching.")
-
     # Process any environment variables set via --set-env
     if args.set_env:
         for env_setting in args.set_env:
@@ -768,8 +765,47 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
     selected_model_name = select_default_model(args, io, analytics)
     if not selected_model_name:
         # Error message and analytics event are handled within select_default_model
+        # It might have already offered OAuth if no model/keys were found.
+        # If it failed here, we exit.
         return 1
     args.model = selected_model_name  # Update args with the selected model
+
+    # Check if an OpenRouter model was selected/specified but the key is missing
+    if args.model.startswith("openrouter/") and not os.environ.get("OPENROUTER_API_KEY"):
+        io.tool_warning(
+            f"The specified model '{args.model}' requires an OpenRouter API key, which was not"
+            " found."
+        )
+        # Attempt OAuth flow because the specific model needs it
+        if offer_openrouter_oauth(io, analytics):
+            # OAuth succeeded, the key should now be in os.environ.
+            # Check if the key is now present after the flow.
+            if os.environ.get("OPENROUTER_API_KEY"):
+                io.tool_output(
+                    "OpenRouter successfully connected."
+                )  # Inform user connection worked
+            else:
+                # This case should ideally not happen if offer_openrouter_oauth succeeded
+                # but check defensively.
+                io.tool_error(
+                    "OpenRouter authentication seemed successful, but the key is still missing."
+                )
+                analytics.event(
+                    "exit",
+                    reason="OpenRouter key missing after successful OAuth for specified model",
+                )
+                return 1
+        else:
+            # OAuth failed or was declined by the user
+            io.tool_error(
+                f"Unable to proceed without an OpenRouter API key for model '{args.model}'."
+            )
+            io.offer_url(urls.models_and_keys, "Open documentation URL for more info?")
+            analytics.event(
+                "exit",
+                reason="OpenRouter key missing for specified model and OAuth failed/declined",
+            )
+            return 1
 
     main_model = models.Model(
         args.model,
@@ -1064,6 +1100,9 @@ def main(argv=None, input=None, output=None, force_git_root=None, return_coder=F
 
         io.tool_output(f"Cur working dir: {Path.cwd()}")
         io.tool_output(f"Git working dir: {git_root}")
+
+    if args.stream and args.cache_prompts:
+        io.tool_warning("Cost estimates may be inaccurate when using streaming and caching.")
 
     if args.load:
         commands.cmd_load(args.load)
